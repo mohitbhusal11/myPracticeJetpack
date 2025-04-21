@@ -1,5 +1,6 @@
 package com.example.myjetpack
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -7,10 +8,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.Animatable
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -81,6 +82,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.NavHost
 import androidx.compose.runtime.mutableStateOf
@@ -103,6 +105,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
@@ -112,6 +115,7 @@ import androidx.compose.ui.text.font.GenericFontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -191,13 +195,14 @@ fun BottomNavigationBar(navController: NavController) {
 
 @Composable
 fun NavHostContainer(navController: NavHostController, padding: PaddingValues) {
+    var showLine = remember { mutableStateOf(false) }
     NavHost(
         navController = navController,
         startDestination = "home",
         modifier = Modifier.padding(padding)
     ) {
         composable("home") {
-            PracticeUI(navController)
+            PracticeUI(navController, showLine)
         }
         composable("search") {
             SearchScreen()
@@ -219,6 +224,23 @@ fun NavHostContainer(navController: NavHostController, padding: PaddingValues) {
         }
     }
 
+    if(showLine.value){
+        Toast.makeText(navController.context, "Line is shown", Toast.LENGTH_SHORT).show()
+        Canvas(modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp)
+            .zIndex(1f)) {
+            val canvasWidth = size.width
+            val canvasHeight = size.height
+            drawLine(
+                start = Offset(x = 200f, y = 0f),
+                end = Offset(x = 200f, y = canvasHeight),
+                color = Color.Red,
+                strokeWidth = 1F,
+            )
+        }
+    }
+
 }
 
 /*@Composable
@@ -237,8 +259,9 @@ fun PracticeUI() {
     }
 }*/
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun PracticeUI(navController: NavHostController) {
+fun PracticeUI(navController: NavHostController, showLine: MutableState<Boolean>) {
     val clips = listOf("Data Structures", "Algorithms", "Competitive Programming", "Python")
     var coroutine = rememberCoroutineScope()
     coroutine.launch {
@@ -288,13 +311,14 @@ fun PracticeUI(navController: NavHostController) {
 
         // Grid items
         items(courses.size) { course ->
-            PracticeCourseItem(navController, course = courses[course])
+            PracticeCourseItem(navController, course = courses[course], showLine)
         }
     }
 }
 
 @Composable
-fun PracticeCourseItem(navController: NavHostController, course: Course) {
+fun PracticeCourseItem(navController: NavHostController, course: Course, showLine: MutableState<Boolean>
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -338,6 +362,9 @@ fun PracticeCourseItem(navController: NavHostController, course: Course) {
                         .clip(RoundedCornerShape(8.dp))
                         .background(Color(0xFF4CAF50))
                         .padding(8.dp, 4.dp)
+                        .clickable {
+                            showLine.value = !showLine.value
+                        }
                 )
             }
         }
