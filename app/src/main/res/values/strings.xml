@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MyJetPack</string>
+    <string name="default_notification_channel_id">myjetpack</string>
+</resources>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "522102499443",
+    "project_id": "myjetpack-cc8af",
+    "storage_bucket": "myjetpack-cc8af.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522102499443:android:f9747bba6df514bdebe206",
+        "android_client_info": {
+          "package_name": "com.example.myjetpack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBStEVeH1bJ4RvZAzbDvHav4B0-5m4tveI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
