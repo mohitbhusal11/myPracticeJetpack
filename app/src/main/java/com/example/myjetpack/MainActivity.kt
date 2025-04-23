@@ -46,6 +46,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
@@ -58,11 +59,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -80,6 +85,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -110,6 +116,7 @@ import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.GenericFontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -132,6 +139,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlin.system.exitProcess
 
 
 class MainActivity : ComponentActivity() {
@@ -143,16 +151,83 @@ class MainActivity : ComponentActivity() {
             MyJetPackTheme {
                 val navController = rememberNavController()
                 Scaffold(
+                    topBar = {
+                        DrawableNavBar(navController)
+                    }, content = { padding ->
+                        NavHostContainer(navController = navController, padding = padding)
+                    },
                     bottomBar = {
                         val navBackStackEntry by navController.currentBackStackEntryAsState()
                         val currentRoute = navBackStackEntry?.destination?.route
-                        if (currentRoute != "practice/profile") {
+                        Log.d("Route", "currentRoute: $currentRoute")
+                        if (currentRoute != "practice/profile" && currentRoute?.contains("courseDetails") != true) {
                             BottomNavigationBar(navController = navController)
                         }
-                    }, content = { padding ->
-                        NavHostContainer(navController = navController, padding = padding)
                     }
                 )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DrawableNavBar(navController: NavHostController){
+    val drawerState  = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    ModalNavigationDrawer(drawerContent = {DrawerContent(navController, drawerState)}, drawerState = drawerState) {
+
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.app_name)) },
+                    colors = TopAppBarDefaults.topAppBarColors(Color.White),
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        }
+                    },
+                )
+            }
+        ) { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues)) {
+                NavHostContainer(navController = navController, paddingValues)
+            }
+        }
+        
+    }
+}
+
+/*@Composable
+fun NavigationGraph(navController: NavHostController) {
+    NavHost(navController, startDestination = "home") {
+        composable("home") { ScreenContent("Home Screen") }
+        composable("profile") { ScreenContent("Profile Screen") }
+        composable("settings") { ScreenContent("Settings Screen") }
+    }
+}*/
+
+@Composable
+fun DrawerContent(navController: NavController, drawerState: DrawerState) {
+    ModalDrawerSheet {
+        Spacer(modifier = Modifier.height(16.dp))
+        val scope = rememberCoroutineScope()
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)) {
+            listOf("Home", "Search", "Profile", "Practice", "Exit").forEach{
+                screen -> 
+                Text(
+                    text = screen,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.W500,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            navController.navigate(screen.lowercase())
+                            scope.launch { drawerState.close() }
+                        }
+                        .padding(12.dp))
             }
         }
     }
@@ -199,7 +274,7 @@ fun NavHostContainer(navController: NavHostController, padding: PaddingValues) {
     NavHost(
         navController = navController,
         startDestination = "home",
-        modifier = Modifier.padding(padding)
+        modifier = Modifier.padding(0.dp)
     ) {
         composable("home") {
             PracticeUI(navController, showLine)
@@ -221,6 +296,10 @@ fun NavHostContainer(navController: NavHostController, padding: PaddingValues) {
 
             CopilotProfileScreen()
 
+        }
+        composable("exit") {
+            MainActivity().finish()
+            exitProcess(0)
         }
     }
 

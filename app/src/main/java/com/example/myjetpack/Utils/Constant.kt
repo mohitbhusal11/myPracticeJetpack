@@ -2,6 +2,7 @@ package com.example.myjetpack.Utils
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import com.example.myjetpack.dataModel.BottomNavigationModel
@@ -29,7 +30,7 @@ object Constants {
         // UI practice
         BottomNavigationModel(
             label = "practice",
-            icon = Icons.Filled.Person,
+            icon = Icons.Filled.Info,
             route = "practice"
         )
     )
